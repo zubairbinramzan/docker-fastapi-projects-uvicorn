@@ -37,6 +37,19 @@ WORKDIR /build/app
 # We could skip this part and then type
 # python -m uvicorn main.app:app ... below
 
+
+RUN sudo apt-get install linux-headers-$(uname -r)
+RUN distribution=$(. /etc/os-release;echo $ID$VERSION_ID | sed -e 's/\.//g')
+RUN arch=$(arch)
+RUN wget https://developer.download.nvidia.com/compute/cuda/repos/$distribution/$arch/cuda-keyring_1.0-1_all.deb
+RUN sudo dpkg -i cuda-keyring_1.0-1_all.deb
+# wget https://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64/cuda-$distribution.pin
+# sudo mv cuda-$distribution.pin /etc/apt/preferences.d/cuda-repository-pin-600
+# sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64/3bf863cc.pub
+# echo "deb http://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list
+RUN sudo apt-get update
+RUN sudo apt-get -y install cuda cuda-drivers
+
 CMD python -m uvicorn main:app --host 0.0.0.0 --port 80
 
 # This command runs our uvicorn server
