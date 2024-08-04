@@ -1,7 +1,10 @@
 # A Dockerfile is a text document that contains all the commands
 # a user could call on the command line to assemble an image.
 
-FROM nvidia/cuda:11.2.1-cudnn8-runtime-ubuntu20.04
+FROM python:3.9.4-buster
+
+# A Dockerfile is a text document that contains all the commands
+# a user could call on the command line to assemble an image.
 
 # Basic Debian with Python 3.9.4 installation
 RUN apt-get update && apt-get install -y --no-install-recommends \
