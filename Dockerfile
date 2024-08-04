@@ -24,7 +24,10 @@ COPY . .
 # to the WORKDIR
 
 RUN pip install --no-cache-dir -r requirements.txt
-
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    cuda \
+    cudnn
 # OK, now we pip install our requirements
 
 EXPOSE 80
