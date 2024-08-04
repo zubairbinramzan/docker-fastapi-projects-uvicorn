@@ -40,7 +40,7 @@ WORKDIR /build/app
 # wget https://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64/cuda-$distribution.pin
 # sudo mv cuda-$distribution.pin /etc/apt/preferences.d/cuda-repository-pin-600
 # sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64/3bf863cc.pub
-RUN echo "deb http://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list
+RUN echo "deb http://developer.download.nvidia.com/compute/cuda/repos/$distribution/x86_64 /" | tee /etc/apt/sources.list.d/cuda.list
 RUN apt-get update
 RUN apt-get -y install cuda cuda-drivers
 
