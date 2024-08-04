@@ -1,46 +1,51 @@
 # A Dockerfile is a text document that contains all the commands
 # a user could call on the command line to assemble an image.
 
-FROM python:3.9.4-buster
+FROM nvidia/cuda:11.2.1-cudnn8-runtime-ubuntu20.04
 
-# Our Debian with python is now installed.
-# Imagine we have folders /sys, /tmp, /bin etc. there
-# like we would install this system on our laptop.
+# Basic Debian with Python 3.9.4 installation
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3.9 \
+    python3.9-dev \
+    python3-pip \
+    build-essential \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
 
-RUN mkdir build
+# Install Python 3.9.4 and set it as default
+RUN update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 1 \
+    && update-alternatives --install /usr/bin/pip3 pip3 /usr/bin/pip3.9 1
 
-# We create folder named build for our stuff.
+# Create build directory
+RUN mkdir -p /build
 
+# Set the working directory
 WORKDIR /build
 
-# Basic WORKDIR is just /
-# Now we just want to our WORKDIR to be /build
-
+# Copy all files from current directory to the working directory
 COPY . .
 
-# FROM [path to files from the folder we run docker run]
-# TO [current WORKDIR]
-# We copy our files (files from .dockerignore are ignored)
-# to the WORKDIR
+# Install Python dependencies
+RUN pip3 install --no-cache-dir -r requirements.txt
 
-RUN pip install --no-cache-dir -r requirements.txt
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    cuda \
-    cudnn
-# OK, now we pip install our requirements
+# Install CUDA and cuDNN
+RUN apt-key adv --fetch-keys http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64/7fa2af80.pub \
+    && echo "deb http://developer.download.nvidia.com/compute/cuda/repos/ubuntu1804/x86_64 /" > /etc/apt/sources.list.d/cuda.list \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    cuda-11-2 \
+    libcudnn8=8.1.1.33-1+cuda11.2 \
+    libcudnn8-dev=8.1.1.33-1+cuda11.2 \
+    && rm -rf /var/lib/apt/lists/*
 
+# Set environment variables for CUDA and cuDNN
+ENV LD_LIBRARY_PATH /usr/local/cuda/lib64:/usr/local/cuda/extras/CUPTI/lib64:$LD_LIBRARY_PATH
+ENV CUDA_HOME /usr/local/cuda
+
+# Expose port 80
 EXPOSE 80
 
-# Instruction informs Docker that the container listens on port 80
-
+# Set the working directory to /build/app
 WORKDIR /build/app
 
-# Now we just want to our WORKDIR to be /build/app for simplicity
-# We could skip this part and then type
-# python -m uvicorn main.app:app ... below
-
-CMD python -m uvicorn main:app --host 0.0.0.0 --port 80
-
-# This command runs our uvicorn server
-# See Troubleshoots to understand why we need to type in --host 0.0.0.0 and --port 80
+# Command to run the uvicorn server
+CMD ["python", "-m", "uvicorn", "main:app", "--host", "0.0.0.0", "--port", "80"]
